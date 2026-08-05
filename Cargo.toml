@@ -1,3 +1,6 @@
+# Standalone package (kept out of the parent /Users/stast/Learning workspace)
+[workspace]
+
 [package]
 name = "rust_test"
 version = "0.1.0"
@@ -6,3 +9,132 @@ edition = "2024"
 [dependencies]
 change-case = "0.2.0"
 rand = "0.10.1"
+
+[dev-dependencies]
+criterion = "0.5"
+
+# ---------------------------------------------------------------------------
+# Benchmarks (run with `cargo bench`). `harness = false` because Criterion
+# provides its own main().
+# ---------------------------------------------------------------------------
+[[bench]]
+name = "sorting"
+harness = false
+
+[[bench]]
+name = "bank"
+harness = false
+
+# ---------------------------------------------------------------------------
+# Examples — every learning file. Run any of them with:
+#     cargo run --example <name>
+# e.g. `cargo run --example s05_enums`
+# ---------------------------------------------------------------------------
+
+# section 4 — ownership & borrowing
+[[example]]
+name = "s04_borrowing"
+path = "examples/section_04/borrowing.rs"
+[[example]]
+name = "s04_ownership"
+path = "examples/section_04/ownership.rs"
+[[example]]
+name = "s04_dereferencing"
+path = "examples/section_04/dereferencing.rs"
+
+# section 5 — structs, enums, pattern matching
+[[example]]
+name = "s05_casting_of_references"
+path = "examples/section_05/casting_of_references.rs"
+[[example]]
+name = "s05_chaining"
+path = "examples/section_05/chaining.rs"
+[[example]]
+name = "s05_destruct_struct"
+path = "examples/section_05/destruct_struct.rs"
+[[example]]
+name = "s05_enums"
+path = "examples/section_05/enums.rs"
+[[example]]
+name = "s05_hashmap"
+path = "examples/section_05/hashmap.rs"
+[[example]]
+name = "s05_option"
+path = "examples/section_05/option.rs"
+[[example]]
+name = "s05_pattern_matching"
+path = "examples/section_05/pattern_matching.rs"
+[[example]]
+name = "s05_result"
+path = "examples/section_05/result.rs"
+[[example]]
+name = "s05_struct"
+path = "examples/section_05/struct.rs"
+[[example]]
+name = "s05_struct_functionality"
+path = "examples/section_05/struct_functionality.rs"
+
+# section 9 — traits & generics
+[[example]]
+name = "s09_associated_vs_generic_type"
+path = "examples/section_09/associated_vs_generic_type.rs"
+[[example]]
+name = "s09_associated_type"
+path = "examples/section_09/associated_type.rs"
+[[example]]
+name = "s09_derived_and_marker_traits"
+path = "examples/section_09/derived_and_marker_traits.rs"
+[[example]]
+name = "s09_generics"
+path = "examples/section_09/generics.rs"
+[[example]]
+name = "s09_traits"
+path = "examples/section_09/traits.rs"
+
+# section 10 — closures & iterators
+[[example]]
+name = "s10_closures"
+path = "examples/section_10/closures.rs"
+[[example]]
+name = "s10_combinators"
+path = "examples/section_10/combinators.rs"
+[[example]]
+name = "s10_functional_pointers"
+path = "examples/section_10/functional_pointers.rs"
+[[example]]
+name = "s10_intoiter"
+path = "examples/section_10/intoiter.rs"
+[[example]]
+name = "s10_iterating_option"
+path = "examples/section_10/iterating_option.rs"
+[[example]]
+name = "s10_iterating_over_collections"
+path = "examples/section_10/iterating_over_collections.rs"
+[[example]]
+name = "s10_iterator"
+path = "examples/section_10/iterator.rs"
+
+# section 11 — lifetimes
+[[example]]
+name = "s11_concrete_lifetimes"
+path = "examples/section_11/concrete_lifetimes.rs"
+[[example]]
+name = "s11_generic_lifetimes"
+path = "examples/section_11/generic_lifetimes.rs"
+[[example]]
+name = "s11_lifetime_elision"
+path = "examples/section_11/lifetime_elision.rs"
+
+# practitions
+[[example]]
+name = "p07_bank_demo"
+path = "examples/practitions_07/bank_demo.rs"
+[[example]]
+name = "p09_notifier"
+path = "examples/practitions_09/notifier.rs"
+[[example]]
+name = "p09_validation"
+path = "examples/practitions_09/validation.rs"
+[[example]]
+name = "p10_orders"
+path = "examples/practitions_10/orders.rs"
