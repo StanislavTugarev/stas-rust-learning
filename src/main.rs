@@ -1,54 +1,24 @@
-use std::format;
+use std::println;
 
-trait Describe {
-    fn name(&self) -> String;
-    fn describe(&self) -> String {
-        format!("This is {}", self.name())
+// structs with references needs lifetime to its references
+struct ArrayProcesor<'a> {
+    data: &'a [i32]
+}
+
+// impl needs lifetime annotation if we use generics inside the struct
+impl<'a> ArrayProcesor<'a> {
+    // lifetime parameter of self assigned to output parameter (3rd rule)
+    fn update_data(&mut self, new_data: &'a [i32]) -> &[i32] {
+        let previous_data = self.data;
+        self.data = new_data;
+        previous_data
     }
-}
-
-struct Dog {
-    name: String,
-    age: u32,
-    color: String
-}
-
-struct Car {
-    mark: String,
-    model: String,
-    manufacture_date: u32
-}
-
-impl Describe for Dog {
-    fn name(&self) -> String {
-        self.name.clone()
-    }
-}
-
-impl Describe for Car {
-    fn name(&self) -> String {
-        format!("{} {}", self.mark, self.model)
-    }
-}
-
-fn announce<T: Describe>(item: T) {
-    item.describe();
 }
 
 fn main() {
-    let dog = Dog {
-        name: "barker".to_string(),
-        age: 5,
-        color: "brown".to_string(),
-    };  
-    let car = Car {
-        mark: "Ford". to_string(),
-        model: "Focus".to_string(),
-        manufacture_date: 2002
-    };
+    let mut some_data = ArrayProcesor {data: &[4, 5 ,6]};
 
-    let list: Vec<Box<dyn Describe>> = vec![Box::new(dog), Box::new(car)];
-    for item in list {
-        println!("{}", item.describe());
-    }
+    let previous_data = some_data.update_data(&[5, 8, 10]);
+    println!("previous data: {:?}", previous_data);
+    println!("new data: {:?}", some_data.data);
 }

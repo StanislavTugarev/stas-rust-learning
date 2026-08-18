@@ -4,7 +4,7 @@
 3. If the owner goes out of scope, the value is cleaned up
 */
 
-fn main () {
+fn main() {
     let s1 = String::from("worlds");
     // let s2 = s1; // s2 takes s1 params and value and now it's owner, s1 is not available after this
     let s2 = s1.clone(); // clone the s1 params and clone the heap value
@@ -20,7 +20,7 @@ fn main () {
     let y = x;
     println!("x is {x}"); // the primitive types value saves in stack, not a heap, so we don't give the ownership x to y
 
-    let vec_1 = vec![1,2,3];
+    let vec_1 = vec![1, 2, 3];
     takes_ownership(vec_1); //passing a variable to a function has the same effect as assigning it to another variable
 
     let vec_2 = gives_ownership();
@@ -32,7 +32,6 @@ fn main () {
     let x = 10;
     stack_function(x);
     println!("x in main is {x}");
-
 }
 
 fn takes_ownership(vec: Vec<i32>) {
@@ -41,7 +40,7 @@ fn takes_ownership(vec: Vec<i32>) {
 }
 
 fn gives_ownership() -> Vec<i32> {
-    vec![4,5,6]
+    vec![4, 5, 6]
 }
 
 fn takes_and_gives_ownership(mut vec: Vec<i32>) -> Vec<i32> {

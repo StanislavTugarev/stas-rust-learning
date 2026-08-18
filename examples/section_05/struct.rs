@@ -3,10 +3,10 @@ struct Car {
     owner: String,
     year: u32,
     fuel_level: f32,
-    price: u32
+    price: u32,
 }
 
-// tuple struct 
+// tuple struct
 struct Point2D(i32, i32);
 struct Point3D(i32, i32, i32);
 
@@ -15,7 +15,7 @@ fn main() {
         owner: String::from("ABC"),
         year: 2010,
         fuel_level: 0.0,
-        price: 5000
+        price: 5000,
     };
     let car_year = my_car.year;
     my_car.fuel_level = 30.0;

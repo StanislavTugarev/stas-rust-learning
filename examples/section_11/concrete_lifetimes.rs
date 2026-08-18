@@ -11,7 +11,8 @@ fn main() {
 
     // heap allocated data
     let str_1 = "abc".to_string();
-    let str_2 = str_1; // end of the lifetime of str_1
+    let mut str_2 = str_1; // end of the lifetime of str_1
+    let mut str_11 = str_2.as_mut_str();
     // we can't use str_1 anymore, the ownership of the value is gone to the str_2
 
     let i;

@@ -2,7 +2,7 @@ struct Car {
     owner: String,
     year: u32,
     fuel_level: f32,
-    price: u32
+    price: u32,
 }
 
 // Method for struct
@@ -21,7 +21,7 @@ impl Car {
     // second form - a mutable reference of self
     fn refuel(&mut self, gallons: f32) {
         self.fuel_level += gallons;
-    } 
+    }
 
     // third form - an owned form of self
     fn sell(self) -> Self {
@@ -44,7 +44,7 @@ impl Car {
             owner: name,
             year: year,
             fuel_level: 0.0,
-            price: 0
+            price: 0,
         }
     }
 }
@@ -54,7 +54,7 @@ fn main() {
         owner: String::from("ABC"),
         year: 2010,
         fuel_level: 0.0,
-        price: 5000
+        price: 5000,
     };
     my_car.display_car_info();
 
