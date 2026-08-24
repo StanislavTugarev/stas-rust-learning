@@ -1,24 +1,26 @@
-use std::println;
-
-// structs with references needs lifetime to its references
-struct ArrayProcesor<'a> {
-    data: &'a [i32]
+#[derive(Debug)]
+enum List {
+    Cons(i32, Option<Box<List>>), // we can use less heap space, using option instead of putting Nil in a box
 }
 
-// impl needs lifetime annotation if we use generics inside the struct
-impl<'a> ArrayProcesor<'a> {
-    // lifetime parameter of self assigned to output parameter (3rd rule)
-    fn update_data(&mut self, new_data: &'a [i32]) -> &[i32] {
-        let previous_data = self.data;
-        self.data = new_data;
-        previous_data
-    }
-}
+struct Huge_Data;
+struct Small_Data;
+trait Storage {}
 
-fn main() {
-    let mut some_data = ArrayProcesor {data: &[4, 5 ,6]};
+impl Storage for Huge_Data {}
+impl Storage for Small_Data {}
 
-    let previous_data = some_data.update_data(&[5, 8, 10]);
-    println!("previous data: {:?}", previous_data);
-    println!("new data: {:?}", some_data.data);
+fn main(){
+    let list = List::Cons(1, Some(Box::new(List::Cons(2, Some(Box::new(List::Cons(3, None)))))));
+    println!("{:?}", list);
+
+    let data_1 = Huge_Data;
+    let data_2 = Box::new(Huge_Data);
+
+    let data_3 = data_1; // the entire data will be copied, because all data in stack
+    let data_4 = data_2; // only the box pointer will be copied
+
+    let data_5 = Box::new(Small_Data);
+
+    let data: Vec<Box<dyn Storage>> = vec![Box::new(data_3), data_4, data_5]; // storage all types of data implementing Storage trait
 }

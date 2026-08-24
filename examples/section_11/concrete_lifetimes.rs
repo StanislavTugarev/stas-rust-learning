@@ -26,9 +26,10 @@ fn main() {
     // non-lexical lifetimes
     // we can have either one mutable reference or multiple immutable
     // lifetime of the reference doesn't tight to scope, we don't use it after creating a mutable reference so it's lifetime ends here
-    let ref_1 = &vec_1;
+    let ref_1: &_ = &vec_1;
     println!("ref 1: {:?}", ref_1); // lifetime of ref_1 ends here
     let ref_2 = &mut vec_1;
     ref_2.push(3);
     println!("ref 2: {:?}", ref_2);
+    let ref_1 = &vec_1;
 }
