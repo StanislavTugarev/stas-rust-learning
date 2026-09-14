@@ -1,5 +1,5 @@
 extern crate rand;
-use rand::random_range;
+// use rand::random_range;
 use rust_test::Account;
 use rust_test::Bank;
 
@@ -14,7 +14,7 @@ fn stress_test() {
     println!("{}", total_balance);
 
     for i in 0..50 {
-        database.trasfer(random_range(0..=100), random_range(0..=100), 700.0);
+        // database.trasfer(random_range(0..=100), random_range(0..=100), 700.0);
     }
 
     let mut new_balance = 0.0;

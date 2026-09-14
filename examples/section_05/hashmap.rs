@@ -1,5 +1,7 @@
 use std::{collections::HashMap, hash::Hash};
 fn main() {
+    // Btree map?
+    // index map?
     let worlds = vec!["Hello", "World", "Rust", "Programming"];
     let counts = vec![5, 2, 15, 5];
 

@@ -1,26 +1,48 @@
-#[derive(Debug)]
-enum List {
-    Cons(i32, Option<Box<List>>), // we can use less heap space, using option instead of putting Nil in a box
+use std::{
+    f32::consts::E,
+    fs::File,
+    io::{Error, Read},
+    num::ParseIntError,
+};
+
+use anyhow::{Context, Result};
+
+// #[derive(Debug)]
+// enum AppError {
+//     Io(Error),
+//     Parse(ParseIntError),
+// }
+
+// impl From<Error> for AppError {
+//     fn from(value: Error) -> Self {
+//         Self::Io(value)
+//     }
+// }
+
+// impl From<ParseIntError> for AppError {
+//     fn from(value: ParseIntError) -> Self {
+//         Self::Parse(value)
+//     }
+// }
+
+// Result<i32> = Result<i32, anyhow::Error>
+fn read_and_parse_number(file_path: String) -> Result<i32> {
+    let mut file = File::open(file_path).context("Failed to read file contents")?;
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    let number = contents
+        .trim()
+        .parse::<i32>()
+        .with_context(|| format!("Failed to parse integer from contents: {}", contents.trim()))?;
+    Ok(number)
 }
 
-struct Huge_Data;
-struct Small_Data;
-trait Storage {}
-
-impl Storage for Huge_Data {}
-impl Storage for Small_Data {}
-
-fn main(){
-    let list = List::Cons(1, Some(Box::new(List::Cons(2, Some(Box::new(List::Cons(3, None)))))));
-    println!("{:?}", list);
-
-    let data_1 = Huge_Data;
-    let data_2 = Box::new(Huge_Data);
-
-    let data_3 = data_1; // the entire data will be copied, because all data in stack
-    let data_4 = data_2; // only the box pointer will be copied
-
-    let data_5 = Box::new(Small_Data);
-
-    let data: Vec<Box<dyn Storage>> = vec![Box::new(data_3), data_4, data_5]; // storage all types of data implementing Storage trait
+fn main() {
+    let file = "number.txt".to_string();
+    match read_and_parse_number(file) {
+        Ok(number) => println!("File contains number: {}", number),
+        Err(e) => println!("Cannot process: {:?}", e),
+    }
 }
