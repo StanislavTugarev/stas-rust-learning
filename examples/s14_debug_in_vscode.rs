@@ -1,0 +1,16 @@
+fn main() {
+    let numbers = vec![10, 20, 30, 40, 50];
+    let target = 70;
+    let mut sum = 0;
+
+    for (i, num) in numbers.iter().enumerate() {
+        sum += num;
+
+        if sum == target {
+            println!("Found target at index: {}", i);
+            break;
+        }
+    }
+
+    println!("Final sum: {}", sum)
+}
