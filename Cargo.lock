@@ -763,6 +763,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "negative-impl"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "395480ec3f71f1c0c80ea45ec92c0efcd379272ace464adfba89c089c69ed549"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "nu-ansi-term"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1024,6 +1035,7 @@ dependencies = [
  "criterion",
  "env_logger",
  "log",
+ "negative-impl",
  "rand",
  "thiserror",
  "tokio",
