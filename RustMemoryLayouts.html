@@ -504,6 +504,33 @@ tbody tr:last-child td { border-bottom: none; }
 .td-verdict.down { color: #34D399; }
 .td-verdict.eq   { color: var(--muted); }
 
+/* ── Code snippets ────────────────────────────────────── */
+.code-block {
+  margin: 12px 16px 0;
+  padding: 10px 12px;
+  background: var(--ground);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: pre;
+}
+.code-block .cm  { color: var(--muted); }
+.code-block .err { color: #F87171; }
+.code-block .ok  { color: #34D399; }
+.frame-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 4px 10px;
+  border-top: 1px solid rgba(194,96,26,0.3);
+  background: rgba(249,115,22,0.05);
+}
+.reg-content .hot { color: var(--ro-glow); }
+
 /* ── Padding note ─────────────────────────────────────── */
 .reg.padding .reg-name { opacity: 0.4; font-style: italic; }
 .reg.padding .reg-content { opacity: 0.4; font-style: italic; }
@@ -1043,6 +1070,111 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
     </div>
     <p class="card-note"><code>let a: i32 = 1; let b: u64 = 2; let bx: Box&lt;dyn Fn(i32) -&gt; u64&gt; = Box::new(move |x| x as u64 + a as u64 + b);</code><br>Owned trait object — the captured a and b move to the heap. A ZST closure in a Box allocates nothing (data ptr is dangling but valid).</p>
+  </div>
+
+  <!-- ── ZST CLOSURE DISPATCH ───────────────────────── -->
+  <div class="section-head"><h2>0-byte closure — where is the code pointer?</h2></div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="type-name">apply(p, 5) — static dispatch</span>
+      <span class="type-size-badge">p, f = 0 bytes</span>
+    </div>
+<pre class="code-block">fn apply&lt;F: Fn(i32) -&gt; i32&gt;(f: F, v: i32) -&gt; i32 { f(v) }
+
+let p = |x: i32| x + 1;   <span class="cm">// type: Closure0 (anonymous, unique, 0 B)</span>
+let r = apply(p, 5);
+
+<span class="cm">// what the compiler generates (monomorphization):</span>
+struct Closure0;                                          <span class="cm">// no fields</span>
+fn main_closure0(_: &amp;Closure0, x: i32) -&gt; i32 { x + 1 }   <span class="cm">// body → .text</span>
+fn apply__Closure0(f: Closure0, v: i32) -&gt; i32 {
+    main_closure0(&amp;f, v)                                  <span class="cm">// address fixed at compile time</span>
+}</pre>
+    <div class="mem-layout">
+      <div class="mem-box stack">
+        <div class="mem-box-header"><span>Stack</span><span class="mem-box-total">frames</span></div>
+        <div class="frame-label">main</div>
+        <div class="reg"><div class="reg-name">p</div><div class="reg-content"><span>Closure0</span><span class="reg-bytes">0 B</span></div></div>
+        <div class="reg"><div class="reg-name">r</div><div class="reg-content"><span>i32</span><span class="reg-bytes">4 B</span></div></div>
+        <div class="frame-label">apply::&lt;Closure0&gt;</div>
+        <div class="reg"><div class="reg-name">f</div><div class="reg-content"><span>Closure0</span><span class="reg-bytes">0 B</span></div></div>
+        <div class="reg"><div class="reg-name">v</div><div class="reg-content"><span>i32 = 5</span><span class="reg-bytes">4 B</span></div></div>
+        <div class="frame-label">main::{closure#0}</div>
+        <div class="reg"><div class="reg-name">x</div><div class="reg-content"><span>5 (in register)</span><span class="reg-bytes">—</span></div></div>
+      </div>
+      <div class="arrow-connector"><span>──►</span></div>
+      <div class="mem-box rodata">
+        <div class="mem-box-header"><span>.text (machine code)</span></div>
+        <div class="reg wide"><div class="reg-content"><span>main:<br>&nbsp;&nbsp;mov edi, 5<br>&nbsp;&nbsp;call <span class="hot">apply::&lt;Closure0&gt;</span></span></div></div>
+        <div class="reg wide"><div class="reg-content"><span>apply::&lt;Closure0&gt;:<br>&nbsp;&nbsp;call <span class="hot">main::{closure#0}</span><br>&nbsp;&nbsp;ret</span></div></div>
+        <div class="reg wide"><div class="reg-content"><span>main::{closure#0}:<br>&nbsp;&nbsp;lea eax, [rdi+1]<br>&nbsp;&nbsp;ret</span></div></div>
+      </div>
+    </div>
+    <p class="card-note">The "pointer to the implementation" is not in the data. It is the operand of the call instruction, chosen from the closure's unique type at compile time. The callee frame needs no bytes: apply::&lt;Closure0&gt; is a copy generated only for this closure, and a different closure would get its own apply::&lt;Closure1&gt;. With --release the whole chain is usually inlined to mov eax, 6. &amp;self points at a ZST, so nothing is read from it and the optimizer drops it.</p>
+  </div>
+
+  <div class="cmp-rules">
+    <div class="cmp-rule"><span class="big">0 B</span><b>F: Fn / impl Fn</b>: the code is chosen by the <b>type</b> at compile time. Direct call, can be inlined.</div>
+    <div class="cmp-rule"><span class="big">8 B</span><b>fn(i32) -&gt; i32</b>: the code is chosen by a <b>value</b> (an address) at runtime. Indirect call through a register.</div>
+    <div class="cmp-rule"><span class="big fat">16 B</span><b>&amp;dyn Fn / Box&lt;dyn Fn&gt;</b>: the code is chosen by a <b>value</b> (data + vtable) at runtime. Indirect call through the vtable.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="type-name">let mut p — reassigning a different closure</span>
+      <span class="type-size-badge">0 B ✗ → 8 B ✓</span>
+    </div>
+<pre class="code-block">let mut p = |x: i32| x + 1;
+p = |x: i32| x + 2;
+<span class="err">error[E0308]: mismatched types — expected closure, found a different closure
+  = note: no two closures, even if identical, have the same type</span>
+
+<span class="cm">// fix: erase the type so "which code" becomes runtime data</span>
+<span class="ok">let mut p: fn(i32) -&gt; i32 = |x| x + 1;   // size_of_val(&amp;p) == 8
+p = |x| x + 2;                           // only the 8-byte address changes</span></pre>
+    <div class="mem-layout">
+      <div class="mem-box stack">
+        <div class="mem-box-header"><span>Stack</span><span class="mem-box-total">8 B</span></div>
+        <div class="frame-label">before p = …</div>
+        <div class="reg"><div class="reg-name">p</div><div class="reg-content"><span>0x4a10 → closure#0</span><span class="reg-bytes">8 B</span></div></div>
+        <div class="frame-label">after p = …</div>
+        <div class="reg"><div class="reg-name">p</div><div class="reg-content"><span>0x4a30 → closure#1</span><span class="reg-bytes">8 B</span></div></div>
+      </div>
+      <div class="arrow-connector"><span>──►</span></div>
+      <div class="mem-box rodata">
+        <div class="mem-box-header"><span>.text (machine code)</span></div>
+        <div class="reg wide"><div class="reg-content"><span>0x4a10 main::{closure#0}: lea eax,[rdi+1]; ret</span></div></div>
+        <div class="reg wide"><div class="reg-content"><span>0x4a30 main::{closure#1}: lea eax,[rdi+2]; ret</span></div></div>
+      </div>
+    </div>
+    <p class="card-note"><code>mut</code> lets you change the value of p, not its type. A 0-byte p has nowhere to record which closure it holds, so a runtime choice needs bytes. Both bodies always stay in .text, and the call becomes call [rbp-8]. Closures that capture data cannot become fn pointers. Use Box&lt;dyn Fn&gt; for those (16 B). Special case: <code>if c { |x| x+1 } else { |x| x+2 }</code> compiles, because LUB coercion turns both non-capturing closures into fn(i32) -&gt; i32 (8 B).</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="type-name">"p is any type implementing Fn"? — no</span>
+      <span class="type-size-badge">trait ≠ type</span>
+    </div>
+<pre class="code-block">let p = |x: i32| x + 1;   <span class="cm">// p: Closure0 — ONE concrete type that implements Fn</span>
+
+let p: dyn Fn(i32) -&gt; i32 = |x| x + 1;
+<span class="err">error[E0277]: the size for values of type `dyn Fn(i32) -&gt; i32` cannot be known at compilation time
+  = note: all local variables must have a statically known size</span>
+
+let p: impl Fn(i32) -&gt; i32 = |x| x + 1;
+<span class="err">error[E0562]: `impl Trait` is not allowed in the type of variable bindings</span></pre>
+    <div class="table-wrap" style="margin:12px 16px 0;width:auto">
+      <table>
+        <thead><tr><th>Where "any Fn" appears</th><th>What it really is</th><th>Size</th><th>Chosen</th></tr></thead>
+        <tbody>
+          <tr><td class="td-type">fn apply&lt;F: Fn&gt;(f: F)</td><td>one copy per concrete type: apply::&lt;Closure0&gt;, …</td><td class="td-stack">0 B (for ZST)</td><td class="td-cat">compile time</td></tr>
+          <tr><td class="td-type">fn make() -&gt; impl Fn</td><td>one hidden concrete type</td><td class="td-stack">size of that type</td><td class="td-cat">compile time</td></tr>
+          <tr><td class="td-type">&amp;dyn Fn / Box&lt;dyn Fn&gt;</td><td>truly any type, behind data ptr + vtable</td><td class="td-yes-len">16 B</td><td class="td-cat">runtime</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="card-note">A trait is a property of a type (Closure0: Fn). It is not a type a local variable can have. Different Fn implementations have different sizes (0 B, 4 B, 24 B…), so the frame could not reserve a slot for "any of them". A Java-style interface variable in Rust is Box&lt;dyn Fn&gt; / &amp;dyn Fn. Java does the same thing implicitly: every object variable is a heap pointer plus vtable dispatch.</p>
   </div>
 
   <!-- ── STRUCT1 ────────────────────────────────────── -->
