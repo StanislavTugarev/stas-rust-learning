@@ -1,61 +1,56 @@
-// trait object coercion
-// &T -> &dyn Trait // T implements Trait
+// least upper bound coercion occurs:
+// a series of if/else branches
+// a series of match arms
+// a series of array elements
 
-trait Command {
-    fn execute(&self);
+use std::{any::Any, ops::Deref};
+
+struct JsonValue {
+    raw: String,
+    is_parsed: bool,
 }
-
-struct TurnOnLight {
-    room: String,
-}
-
-struct AdjustThermostat {
-    temperature: f32,
-}
-
-struct TurnOnBlack {
-    room: String,
-}
-
-impl Command for TurnOnLight {
-    fn execute(&self) {
-        println!("Turning on lights in the {}", self.room)
+impl Deref for JsonValue {
+    type Target = String;
+    fn deref(&self) -> &Self::Target {
+        &self.raw
     }
 }
 
-impl Command for AdjustThermostat {
-    fn execute(&self) {
-        println!("Setting thermostat to {}C", self.temperature)
-    }
-}
+struct A;
 
-impl Command for TurnOnBlack {
-    fn execute(&self) {
-        println!("Turn Black in the {}", self.room)
-    }
-}
+struct B;
 
-fn execute_command(command: &dyn Command) {
-    command.execute();
-}
-
-fn execute_command_1<T: Command>(command: &T) {
-    command.execute();
-}
+struct C;
 
 fn main() {
-    let light_cmd = TurnOnLight {
-        room: "Living Room".to_string(),
+    let condition = true;
+    let result: &str = if condition {
+        &"Hello".to_string() //&String -> &str
+    } else {
+        // &JsonValue -> &String -> &str
+        &JsonValue {
+            raw: r#"{"name": "Alice", "age": 30}"#.to_string(),
+            is_parsed: false,
+        }
     };
 
-    let thermostat_cmd = AdjustThermostat { temperature: 25.5 };
+    let value = 3;
+    let a = &A;
+    let b = &B;
+    let c = &C;
 
-    // trait object coercion: &T -> &dyn Command
-    execute_command(&light_cmd);
-    execute_command(&thermostat_cmd);
+    let result: &dyn Any = match value {
+        1 => a,
+        2 => b,
+        _ => c,
+    };
 
-    execute_command_1(&light_cmd);
-    execute_command_1(&thermostat_cmd);
-
-    let command_queue: Vec<&dyn Command> = vec![&light_cmd, &thermostat_cmd];
+    let string_array = [
+        "Rust",
+        &"Rust".to_string(),
+        &JsonValue {
+            raw: r#"{"name": "Alice", "age": 30}"#.to_string(),
+            is_parsed: false,
+        },
+    ];
 }
